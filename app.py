@@ -1,7 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -541,6 +542,11 @@ def get_cuisines():
     cuisines = ['any', 'indian', 'chinese', 'japanese', 'mediterranean', 
                 'italian', 'mexican', 'thai', 'american', 'korean']
     return jsonify(cuisines)
+
+@app.route('/')
+def index():
+    """Serve the main HTML page"""
+    return send_from_directory('.', 'index.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
