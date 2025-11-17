@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Diet Plan Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .form-group input:invalid:not(:placeholder-shown) {
+            border-color: #f44336;
+        }
+
+        .form-group input:valid:not(:placeholder-shown) {
+            border-color: #4CAF50;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .results {
+            margin-top: 40px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid #4CAF50;
+        }
+
+        .card h2 {
+            color: #2E7D32;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .card h3 {
+            color: #333;
+            margin: 20px 0 10px 0;
+            font-size: 1.2em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stat-box .label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-box .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2E7D32;
+        }
+
+        .meal-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .meal-card:hover {
+            transform: translateX(5px);
+        }
+
+        .meal-card h4 {
+            color: #2E7D32;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .meal-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 10px 0;
+            font-size: 0.95em;
+        }
+
+        .meal-info span {
+            background: #e8f5e9;
+            padding: 5px 12px;
+            border-radius: 5px;
+            color: #2E7D32;
+        }
+
+        .suggestions-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .suggestions-list li {
+            background: white;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 3px solid #4CAF50;
+        }
+
+        .bmi-indicator {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+
+        .bmi-normal { background: #4CAF50; color: white; }
+        .bmi-underweight { background: #FF9800; color: white; }
+        .bmi-overweight { background: #FF5722; color: white; }
+        .bmi-obese { background: #D32F2F; color: white; }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #c62828;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .form-section {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🥗 AI Diet Plan Generator</h1>
+            <p>Get personalized meal plans with health insights</p>
+        </div>
+
+        <div class="content">
+            <form id="dietForm">
+                <div class="form-section">
+                    <div class="form-group">
+                        <label for="age">Age (years)</label>
+                        <input type="number" id="age" min="10" max="80" placeholder="Enter your age" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" required>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="height">Height (cm)</label>
+                        <input type="number" id="height" min="100" max="250" placeholder="Enter height in cm" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="weight">Weight (kg)</label>
+                        <input type="number" id="weight" min="30" max="200" placeholder="Enter weight in kg" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="activity">Activity Level</label>
+                        <select id="activity" required>
+                            <option value="low">Low (Little/no exercise)</option>
+                            <option value="medium" selected>Medium (Exercise 3-5 days/week)</option>
+                            <option value="high">High (Exercise 6-7 days/week)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="diet_type">Diet Type</label>
+                        <select id="diet_type" required>
+                            <option value="any" selected>Any</option>
+                            <option value="vegetarian">Vegetarian</option>
+                            <option value="vegan">Vegan</option>
+                            <option value="non-vegetarian">Non-Vegetarian</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="goal">Goal</label>
+                        <select id="goal" required>
+                            <option value="lose">Lose Weight</option>
+                            <option value="maintain" selected>Maintain Weight</option>
+                            <option value="gain">Gain Weight</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cuisine">Cuisine Preference</label>
+                        <select id="cuisine" required>
+                            <option value="any" selected>Any</option>
+                            <option value="indian">Indian</option>
+                            <option value="chinese">Chinese</option>
+                            <option value="japanese">Japanese</option>
+                            <option value="mediterranean">Mediterranean</option>
+                            <option value="italian">Italian</option>
+                            <option value="mexican">Mexican</option>
+                            <option value="thai">Thai</option>
+                            <option value="american">American</option>
+                            <option value="korean">Korean</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="meals_per_day">Meals Per Day</label>
+                        <select id="meals_per_day" required>
+                            <option value="2">2 Meals</option>
+                            <option value="3" selected>3 Meals</option>
+                            <option value="4">4 Meals</option>
+                            <option value="5">5 Meals</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">
+                        🎯 Generate Meal Plan
+                    </button>
+                    <button type="button" id="healthBtn" class="btn btn-secondary">
+                        📊 Health Assessment
+                    </button>
+                    <button type="button" id="exerciseBtn" class="btn btn-secondary" style="background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);">
+                        💪 Exercise Plan
+                    </button>
+                </div>
+            </form>
+
+            <div class="error" id="error"></div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 20px; color: #666;">Generating your personalized plan...</p>
+            </div>
+
+            <div class="results" id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        document.getElementById('dietForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await generatePlan();
+        });
+
+        document.getElementById('healthBtn').addEventListener('click', async () => {
+            await showHealthAssessment();
+        });
+
+        document.getElementById('exerciseBtn').addEventListener('click', async () => {
+            await showExercisePlan();
+        });
+
+        async function generatePlan() {
+            // Validate form before submission
+            if (!validateForm()) {
+                return;
+            }
+
+            const formData = getFormData();
+            showLoading(true);
+            hideError();
+
+            try {
+                const response = await fetch(`${API_URL}/generate-plan`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to generate plan');
+                }
+
+                displayResults(data);
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function showHealthAssessment() {
+            // Validate form before submission
+            if (!validateForm()) {
+                return;
+            }
+
+            const formData = getFormData();
+            showLoading(true);
+            hideError();
+
+            try {
+                const response = await fetch(`${API_URL}/health-assessment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to get health assessment');
+                }
+
+                displayHealthAssessment(data);
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function validateForm() {
+            const age = document.getElementById('age').value;
+            const height = document.getElementById('height').value;
+            const weight = document.getElementById('weight').value;
+
+            // Check if fields are empty
+            if (!age || !height || !weight) {
+                showError('⚠️ Please fill in all required fields: Age, Height, and Weight');
+                return false;
+            }
+
+            // Validate age range
+            const ageNum = parseInt(age);
+            if (ageNum < 10 || ageNum > 80) {
+                showError('⚠️ Age must be between 10 and 80 years');
+                return false;
+            }
+
+            // Validate height range
+            const heightNum = parseInt(height);
+            if (heightNum < 100 || heightNum > 250) {
+                showError('⚠️ Height must be between 100 and 250 cm');
+                return false;
+            }
+
+            // Validate weight range
+            const weightNum = parseInt(weight);
+            if (weightNum < 30 || weightNum > 200) {
+                showError('⚠️ Weight must be between 30 and 200 kg');
+                return false;
+            }
+
+            return true;
+        }
+
+        function getFormData() {
+            return {
+                age: parseInt(document.getElementById('age').value),
+                gender: document.getElementById('gender').value,
+                height: parseInt(document.getElementById('height').value),
+                weight: parseInt(document.getElementById('weight').value),
+                activity_level: document.getElementById('activity').value,
+                diet_type: document.getElementById('diet_type').value,
+                goal: document.getElementById('goal').value,
+                cuisine: document.getElementById('cuisine').value,
+                meals_per_day: parseInt(document.getElementById('meals_per_day').value)
+            };
+        }
+
+        function displayResults(data) {
+            const { health_status, plan, suggestions } = data;
+            const resultsDiv = document.getElementById('results');
+
+            const bmiClass = getBMIClass(health_status.bmi_status);
+            const mealTypes = ['Breakfast', 'Morning Snack', 'Lunch', 'Evening Snack', 'Dinner'];
+
+            resultsDiv.innerHTML = `
+                <div class="card">
+                    <h2>💊 Health Status</h2>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="label">BMI</div>
+                            <div class="value">${health_status.bmi}</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">Status</div>
+                            <div class="value" style="font-size: 1.2em;">
+                                <span class="bmi-indicator ${bmiClass}">${health_status.bmi_status}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="margin-top: 15px;"><strong>Risk:</strong> ${health_status.bmi_risk}</p>
+                    <p><strong>Ideal Weight Range:</strong> ${health_status.ideal_weight_range[0]} - ${health_status.ideal_weight_range[1]} kg</p>
+                </div>
+
+                <div class="card">
+                    <h2>📊 Nutritional Targets</h2>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="label">BMR</div>
+                            <div class="value">${plan.targets.bmr}</div>
+                            <div class="label">kcal/day</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">TDEE</div>
+                            <div class="value">${plan.targets.tdee}</div>
+                            <div class="label">kcal/day</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">Target Calories</div>
+                            <div class="value">${plan.targets.calories}</div>
+                            <div class="label">kcal/day</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">Protein</div>
+                            <div class="value">${plan.targets.protein}g</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">Fat</div>
+                            <div class="value">${plan.targets.fat}g</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">Carbs</div>
+                            <div class="value">${plan.targets.carbs}g</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>📈 Your Meal Plan Totals</h2>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="label">Calories</div>
+                            <div class="value">${plan.totals.calories}</div>
+                            <div class="label">${plan.accuracy.calories}% accurate</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">Protein</div>
+                            <div class="value">${plan.totals.protein}g</div>
+                            <div class="label">${plan.accuracy.protein}% accurate</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">Fat</div>
+                            <div class="value">${plan.totals.fat}g</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">Carbs</div>
+                            <div class="value">${plan.totals.carbs}g</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>🍽️ Your ${plan.meals_per_day} Meals</h2>
+                    ${plan.meals.map((meal, index) => `
+                        <div class="meal-card">
+                            <h4>${mealTypes[index] || `Meal ${index + 1}`}: ${meal.name}</h4>
+                            <div class="meal-info">
+                                <span>📊 ${meal.calories} kcal</span>
+                                <span>🥩 Protein: ${meal.protein}g</span>
+                                <span>🥑 Fat: ${meal.fat}g</span>
+                                <span>🍞 Carbs: ${meal.carbs}g</span>
+                            </div>
+                            <div class="meal-info">
+                                <span>🥗 ${meal.diet_type}</span>
+                                <span>⏱️ ${meal.prep_time} mins</span>
+                            </div>
+                            <p style="margin-top: 10px;"><strong>🛒 Ingredients:</strong> ${meal.ingredients}</p>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="card">
+                    <h2>💡 Personalized Health Suggestions</h2>
+                    <ul class="suggestions-list">
+                        ${suggestions.map(s => `<li>${s}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+
+            resultsDiv.classList.add('show');
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function displayHealthAssessment(health_status) {
+            const resultsDiv = document.getElementById('results');
+            const bmiClass = getBMIClass(health_status.bmi_status);
+
+            resultsDiv.innerHTML = `
+                <div class="card">
+                    <h2>📊 Comprehensive Health Assessment</h2>
+                    
+                    <h3>🔍 Body Composition Analysis</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="label">BMI</div>
+                            <div class="value">${health_status.bmi}</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">Status</div>
+                            <div class="value" style="font-size: 1.2em;">
+                                <span class="bmi-indicator ${bmiClass}">${health_status.bmi_status}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p style="margin: 15px 0;"><strong>Health Risk:</strong> ${health_status.bmi_risk}</p>
+                    <p><strong>Ideal Weight Range:</strong> ${health_status.ideal_weight_range[0]} - ${health_status.ideal_weight_range[1]} kg</p>
+                    
+                    <h3 style="margin-top: 30px;">📅 Next Steps</h3>
+                    <ul class="suggestions-list">
+                        <li>Follow your personalized meal plan consistently</li>
+                        <li>Track your progress weekly (weight, energy levels, mood)</li>
+                        <li>Adjust calorie intake if not seeing desired results after 2 weeks</li>
+                        <li>Stay hydrated - drink at least 8 glasses of water daily</li>
+                        <li>Get 7-9 hours of quality sleep each night</li>
+                        <li>Consider consulting a healthcare provider for detailed assessment</li>
+                    </ul>
+                    
+                    <p style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 8px;">
+                        <strong>💪 Remember:</strong> Sustainable changes take time. Be patient and consistent!
+                    </p>
+                </div>
+            `;
+
+            resultsDiv.classList.add('show');
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function getBMIClass(status) {
+            const statusMap = {
+                'Normal': 'bmi-normal',
+                'Underweight': 'bmi-underweight',
+                'Overweight': 'bmi-overweight',
+                'Obese': 'bmi-obese'
+            };
+            return statusMap[status] || 'bmi-normal';
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('show', show);
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        function hideError() {
+            document.getElementById('error').classList.remove('show');
+        }
+
+        async function showExercisePlan() {
+            // Validate form before submission
+            if (!validateForm()) {
+                return;
+            }
+
+            const formData = getFormData();
+            showLoading(true);
+            hideError();
+
+            try {
+                const response = await fetch(`${API_URL}/exercise-plan`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to get exercise plan');
+                }
+
+                displayExercisePlan(data);
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayExercisePlan(data) {
+            const { health_status, exercises, tips, goal_advice } = data;
+            const resultsDiv = document.getElementById('results');
+            const bmiClass = getBMIClass(health_status.bmi_status);
+
+            resultsDiv.innerHTML = `
+                <div class="card">
+                    <h2>💪 Personalized Exercise & Fitness Plan</h2>
+                    
+                    <h3>🎯 Fitness Profile</h3>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="label">Current BMI</div>
+                            <div class="value">${health_status.bmi}</div>
+                            <div class="label">
+                                <span class="bmi-indicator ${bmiClass}">${health_status.bmi_status}</span>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">Activity Level</div>
+                            <div class="value" style="font-size: 1.3em;">${document.getElementById('activity').value.toUpperCase()}</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="label">Fitness Goal</div>
+                            <div class="value" style="font-size: 1.3em;">${document.getElementById('goal').value.toUpperCase()}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>🏃 Cardio Workouts</h2>
+                    <ul class="suggestions-list">
+                        ${exercises.cardio.map(ex => `<li>${ex}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h2>🏋️ Strength Training</h2>
+                    <ul class="suggestions-list">
+                        ${exercises.strength.map(ex => `<li>${ex}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h2>🧘 Flexibility & Recovery</h2>
+                    <ul class="suggestions-list">
+                        ${exercises.flexibility.map(ex => `<li>${ex}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h2>📅 Weekly Workout Schedule</h2>
+                    <ul class="suggestions-list">
+                        ${exercises.weekly_schedule.map(day => `<li>${day}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h2>💡 Exercise Tips for Success</h2>
+                    <ul class="suggestions-list">
+                        ${tips.map(tip => `<li>${tip}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <h2>🎯 Specific Advice for Your Goal</h2>
+                    <ul class="suggestions-list">
+                        ${goal_advice.map(advice => `<li>${advice}</li>`).join('')}
+                    </ul>
+                    
+                    <div style="margin-top: 30px; padding: 20px; background: #fff3e0; border-radius: 8px; border-left: 4px solid #FF9800;">
+                        <h3 style="color: #E65100; margin-bottom: 15px;">⚠️ Important Reminders</h3>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="margin: 8px 0;">• Always warm up for 5-10 minutes before exercising</li>
+                            <li style="margin: 8px 0;">• Cool down and stretch after every workout</li>
+                            <li style="margin: 8px 0;">• Start slow if you're new to exercise</li>
+                            <li style="margin: 8px 0;">• Increase intensity gradually to avoid injury</li>
+                            <li style="margin: 8px 0;">• Consult a doctor before starting any new exercise program</li>
+                            <li style="margin: 8px 0;">• Stop immediately if you experience chest pain or dizziness</li>
+                        </ul>
+                    </div>
+                    
+                    <p style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 8px; text-align: center; font-size: 1.1em;">
+                        <strong>💪 Ready to transform your health? Let's get started!</strong>
+                    </p>
+                </div>
+            `;
+
+            resultsDiv.classList.add('show');
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+</body>
+</html>
