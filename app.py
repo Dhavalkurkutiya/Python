@@ -537,7 +537,7 @@ def exercise_plan():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/cuisines', methods=['GET'])
-def get_cuisines():
+def get_cuisines(): 
     """Get available cuisines"""
     cuisines = ['any', 'indian', 'chinese', 'japanese', 'mediterranean', 
                 'italian', 'mexican', 'thai', 'american', 'korean']
